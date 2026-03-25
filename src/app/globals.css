@@ -1,26 +1,64 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Cores principais */
+  --color-background: oklch(0.985 0.002 247);
+  --color-foreground: oklch(0.2 0.02 247);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.2 0.02 247);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-primary: oklch(0.65 0.22 40);  
+  --color-primary-foreground: oklch(1 0 0);
+
+  --color-secondary: oklch(0.96 0.005 247);
+  --color-secondary-foreground: oklch(0.3 0.02 247);
+
+  --color-muted: oklch(0.94 0.005 247);
+  --color-muted-foreground: oklch(0.55 0.01 247);
+
+  --color-success: oklch(0.65 0.18 142);
+  --color-success-foreground: oklch(1 0 0);
+
+  --color-destructive: oklch(0.58 0.22 27);
+  --color-destructive-foreground: oklch(1 0 0);
+
+  --color-border: oklch(0.9 0.005 247);
+  --color-input: oklch(0.9 0.005 247);
+  --color-ring: oklch(0.65 0.22 40);
+
+  --radius: 0.75rem;
+
+  /* Animações */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .animate-fade-up {
+    animation: fade-up 0.4s ease forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease forwards;
+  }
 }
