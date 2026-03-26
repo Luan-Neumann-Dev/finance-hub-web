@@ -1,5 +1,6 @@
 'use client';
 
+import { extractErrorMessage } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
 import { Wallet, Mail, Lock, User, AlertCircle} from 'lucide-react'
 import { useState } from 'react';
@@ -231,15 +232,4 @@ export default function LoginPage() {
             </div>
         </div>
     );
-}
-
-function extractErrorMessage(err: unknown): string {
-    if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response?: { data?: { message?: string | string[] } } };
-        const msg = axiosError.response?.data?.message;
-        if (Array.isArray(msg)) return msg[0]
-        if (typeof msg === "string") return msg;
-    }
-
-    return 'Ocorreu um erro. Tente novamente.'
 }
