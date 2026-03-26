@@ -1,11 +1,19 @@
-export default function DashboardLayout({children}: {children: React.ReactNode}) {
-    return (
-        <div className="flex h-screen bg-background">
-            {/*<Sidebar />*/}
+import { Sidebar } from "@/components/layout/sidebar";
 
-            <main className="flex-1 overflow-y-auto p-6">
-                {children}
-            </main>
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+
+      <main className="lg:pl-64">
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">
+          {children}
         </div>
-    )
+      </main>
+    </div>
+  );
 }
