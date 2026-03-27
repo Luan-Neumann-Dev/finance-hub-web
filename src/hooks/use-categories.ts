@@ -26,7 +26,7 @@ export function useCategories() {
   }, [load]);
 
   const create = useCallback(
-    async (id: number, payload: categoriesApi.CategoryPayload) => {
+    async (payload: categoriesApi.CategoryPayload) => {
       const created = await categoriesApi.createCategory(payload);
       setCategories((prev) =>
         [...prev, created].sort((a, b) => a.name.localeCompare(b.name)),
