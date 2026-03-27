@@ -13,12 +13,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         "focus:outline-none focus:ring-2 focus:ring-ring",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "resize-none transition-all",
-        className
+        className,
       )}
       {...props}
     />
-  )
-)
+  ),
+);
 Textarea.displayName = "Textarea";
 
-export { Textarea}
+export { Textarea };
