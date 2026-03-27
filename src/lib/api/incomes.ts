@@ -8,7 +8,7 @@ export interface CreateIncomePayload {
   receiveDate?: number;
 }
 
-export type UpdateIncomePayload = Partial<Income[]>
+export type UpdateIncomePayload = Partial<CreateIncomePayload>
 
 export async function getIncomes(): Promise<Income[]> {
   const { data } = await http.get<Income[]>('/incomes');
