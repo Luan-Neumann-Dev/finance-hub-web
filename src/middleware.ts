@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = ['/login']
 
@@ -8,8 +9,8 @@ export function middleware(request: NextRequest) {
     if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
         return NextResponse.next();
     }
-
-    const token = request.cookies.get("financehub:token")?.value;
+  
+    const token = request.cookies.get("@financehub:token")?.value;
 
     if (!token) {
         const loginUrl = new URL("/login", request.url);
