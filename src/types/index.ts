@@ -1,6 +1,6 @@
 export interface User {
     id: number;
-    email:string;
+    email: string;
     fullName: string | null;
     createdAt?: string;
     updatedAt?: string;
@@ -75,3 +75,43 @@ export const RECURRENCE_OPTIONS = [
     { value: 'monthly', label: 'Mensal' },
     { value: 'weekly', label: 'Semanal' }
 ] as const;
+
+export interface MonthlyReport {
+    totalIncomes: number;
+    totalExpenses: number;
+    balance: number;
+    totalSavings: number;
+    expensesByCategory: {
+        categoryId: number;
+        categoryName: string;
+        categoryColor: string;
+        categoryIcon: string;
+        total: number;
+        count: number;
+        percentage: number;
+    }[];
+}
+
+export interface MonthlyDataPoint {
+  month: number;
+  monthName: string;
+  incomes: number;
+  expenses: number;
+  balance: number;
+}
+
+export interface AnnualReport {
+  year: number;
+  totalIncomes: number;
+  totalExpenses: number;
+  balance: number;
+  monthlyData: MonthlyDataPoint[];
+}
+
+export interface MonthComparison {
+  currentMonth:  { total: number; month: number };
+  previousMonth: { total: number; month: number };
+  difference: number;
+  percentageChange: number;
+  trend: "increase" | "decrease" | "stable";
+}
