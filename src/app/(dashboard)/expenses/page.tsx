@@ -3,10 +3,11 @@
 import { useState } from "react";
 import {
   Plus, Edit2, Trash2, CreditCard, Calendar,
-  Tag, Settings, AlertCircle,
+  Tag, Settings, AlertCircle, CreditCard as CreditCardInstallment
 } from "lucide-react";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useCategories } from "@/hooks/use-categories";
+import { useInstallments } from "@/hooks/use-installments";
 import type { Expense, ExpenseCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,40 +15,45 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, extractErrorMessage, formatDateSafe } from "@/lib/utils";
+import { InstallmentForm } from "@/components/expenses/installment-form";
+import { InstallmentGroupCard } from "@/components/expenses/installment-group-card";
+
 
 const EMPTY_EXPENSE_FORM = {
-  amount:      "",
+  amount: "",
   description: "",
-  categoryId:  "",
-  date:        new Date().toISOString().split("T")[0],
+  categoryId: "",
+  date: new Date().toISOString().split("T")[0],
 };
 
 const EMPTY_CATEGORY_FORM = {
-  name:  "",
+  name: "",
   color: "#FF6B35",
-  icon:  "tag",
+  icon: "tag",
 };
 
 export default function ExpensesPage() {
   const { expenses, isLoading, error, totalAmount, create, update, remove } = useExpenses();
   const { categories, create: createCategory, update: updateCategory, remove: removeCategory } = useCategories();
+  const { groups, isLoading: isLoadingInstallments, totalPending, create: createInstallment, updateExpense: updateInstallmentExpense, deleteExpense: deleteInstallmentExpense } = useInstallments();
 
   // --- Estado dos Dialogs ---
-  const [isExpenseOpen,  setIsExpenseOpen]  = useState(false);
+  const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isInstallmentOpen, setIsInstallmentOpen] = useState(false);
 
   // --- Estado dos Forms ---
-  const [expenseForm,  setExpenseForm]  = useState(EMPTY_EXPENSE_FORM);
+  const [expenseForm, setExpenseForm] = useState(EMPTY_EXPENSE_FORM);
   const [categoryForm, setCategoryForm] = useState(EMPTY_CATEGORY_FORM);
 
   // --- Estado de edição ---
-  const [editingExpense,  setEditingExpense]  = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingCategory, setEditingCategory] = useState<ExpenseCategory | null>(null);
 
   // --- Estado de submissão ---
-  const [isSavingExpense,  setIsSavingExpense]  = useState(false);
+  const [isSavingExpense, setIsSavingExpense] = useState(false);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
-  const [expenseError,  setExpenseError]  = useState<string | null>(null);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
   // --- Handlers de abertura ---
@@ -61,10 +67,10 @@ export default function ExpensesPage() {
   function openEditExpense(expense: Expense) {
     setEditingExpense(expense);
     setExpenseForm({
-      amount:      String(expense.amount),
+      amount: String(expense.amount),
       description: expense.description,
-      categoryId:  expense.categoryId ? String(expense.categoryId) : "",
-      date:        expense.date.split("T")[0],
+      categoryId: expense.categoryId ? String(expense.categoryId) : "",
+      date: expense.date.split("T")[0],
     });
     setExpenseError(null);
     setIsExpenseOpen(true);
@@ -101,7 +107,7 @@ export default function ExpensesPage() {
     setIsSavingExpense(true);
     try {
       const payload = {
-        amount:      parseFloat(expenseForm.amount),
+        amount: parseFloat(expenseForm.amount),
         description: expenseForm.description.trim(),
         ...(expenseForm.categoryId ? { categoryId: parseInt(expenseForm.categoryId, 10) } : {}),
         date: expenseForm.date,
@@ -270,6 +276,10 @@ export default function ExpensesPage() {
                 <Plus className="w-4 h-4" />
                 Nova Despesa
               </Button>
+              <Button variant="outline" onClick={() => setIsInstallmentOpen(true)}>
+                <CreditCardInstallment className="w-4 h-4" />
+                Parcelado
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -349,6 +359,22 @@ export default function ExpensesPage() {
                   {editingExpense ? "Salvar Alterações" : "Adicionar Despesa"}
                 </Button>
               </form>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isInstallmentOpen} onOpenChange={setIsInstallmentOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Nova Compra Parcelada</DialogTitle>
+              </DialogHeader>
+              <InstallmentForm
+                categories={categories}
+                onSubmit={async (payload) => {
+                  await createInstallment(payload);
+                  setIsInstallmentOpen(false);
+                }}
+                onCancel={() => setIsInstallmentOpen(false)}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -477,6 +503,48 @@ export default function ExpensesPage() {
           </div>
         )}
       </div>
+
+      {/* Seção de Parcelamentos */}
+      {(groups.length > 0 || isLoadingInstallments) && (
+        <div className="space-y-4 animate-fade-up">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Compras Parceladas</h2>
+              <p className="text-sm text-muted-foreground">
+                Total pendente:{" "}
+                <span className="font-medium text-destructive">{formatCurrency(totalPending)}</span>
+              </p>
+            </div>
+          </div>
+
+          {isLoadingInstallments ? (
+            <div className="space-y-3">
+              {[1, 2].map((n) => (
+                <div key={n} className="bg-card rounded-xl border border-border p-5 animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="w-11 h-11 rounded-lg bg-muted shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted rounded w-2/5" />
+                      <div className="h-3 bg-muted rounded w-1/4" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {groups.map((group) => (
+                <InstallmentGroupCard
+                  key={group.id}
+                  group={group}
+                  onUpdate={updateInstallmentExpense}
+                  onDelete={deleteInstallmentExpense}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
