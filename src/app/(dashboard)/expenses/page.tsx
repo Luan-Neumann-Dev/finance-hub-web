@@ -276,10 +276,6 @@ export default function ExpensesPage() {
                 <Plus className="w-4 h-4" />
                 Nova Despesa
               </Button>
-              <Button variant="outline" onClick={() => setIsInstallmentOpen(true)}>
-                <CreditCardInstallment className="w-4 h-4" />
-                Parcelado
-              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -361,6 +357,11 @@ export default function ExpensesPage() {
               </form>
             </DialogContent>
           </Dialog>
+
+          <Button variant="outline" onClick={() => setIsInstallmentOpen(true)}>
+            <CreditCardInstallment className="w-4 h-4" />
+            Parcelado
+          </Button>
 
           <Dialog open={isInstallmentOpen} onOpenChange={setIsInstallmentOpen}>
             <DialogContent>
