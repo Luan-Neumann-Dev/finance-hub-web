@@ -30,10 +30,25 @@ export interface ExpenseCategory {
     icon: string;
 }
 
+export interface InstallmentGroup {
+    id: number;
+    userId: number;
+    categoryId: number | null;
+    description: string;
+    totalAmount: number;
+    installments: number;
+    createdAt: string;
+    updatedAt: string;
+    category: ExpenseCategory | null;
+    expenses: Expense[];
+}
+
 export interface Expense {
     id: number;
     userId: number;
     categoryId: number | null;
+    installmentGroupId: number | null;
+    installmentNumber: number | null;
     amount: string;
     description: string;
     date: string;
