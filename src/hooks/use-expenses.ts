@@ -1,19 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "@/lib/utils";
 import * as expensesApi from '@/lib/api/expenses'
-import type { Expense } from "@/types";
+import { PaginationMeta, type Expense } from "@/types";
+
+const DEFAULT_LIMIT = 10;
 
 export function useExpenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (page: number) => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await expensesApi.getExpenses();
-      setExpenses([...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      const result = await expensesApi.getExpenses({page, limit: DEFAULT_LIMIT});
+      setExpenses(result.data);
+      setMeta(result.meta);
+      setCurrentPage(page);
     } catch (err) {
       setError(extractErrorMessage(err))
     } finally {
@@ -21,13 +27,17 @@ export function useExpenses() {
     }
   }, []);
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(1); }, [load])
+  
+  const goToPage = useCallback((page: number) => {
+    load(page);
+  }, [load]);
 
   const create = useCallback(async (payload: expensesApi.CreateExpensePayload) => {
     const created = await expensesApi.createExpense(payload);
-    setExpenses((prev) => [created, ...prev]);
+    await load(1);
     return created;
-  }, []);
+  }, [load]);
 
   const update = useCallback(async (id: number, payload: expensesApi.UpdateExpensePayload) => {
     const updated = await expensesApi.updateExpense(id, payload);
@@ -37,8 +47,9 @@ export function useExpenses() {
 
   const remove = useCallback(async (id: number) => {
     await expensesApi.deleteExpense(id);
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
-  }, [])
+    const targetPage = expenses.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+    await load(targetPage);
+  }, [expenses.length, currentPage, load])
 
   const pay = useCallback(async (id: number) => {
     const updated = await expensesApi.payExpense(id);
@@ -52,9 +63,8 @@ export function useExpenses() {
     return updated;
   }, []);
 
-  const totalAmount = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
   const totalPaid = expenses.filter((e) => e.paidAt).reduce((s, e) => s + Number(e.amount), 0);
   const totalPending = expenses.filter((e) => !e.paidAt).reduce((s, e) => s + Number(e.amount), 0);
 
-  return { expenses, isLoading, error, totalAmount, totalPaid, totalPendingExpenses: totalPending, create, update, remove, pay, unpay, reload: load };
+  return { expenses, isLoading, error, meta, currentPage, goToPage, totalPaid, totalPendingExpenses: totalPending, create, update, remove, pay, unpay, reload: () => load(currentPage) };
 }

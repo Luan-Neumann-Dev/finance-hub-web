@@ -133,3 +133,17 @@ export interface MonthComparison {
   percentageChange: number;
   trend: "increase" | "decrease" | "stable";
 }
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: PaginationMeta;
+}

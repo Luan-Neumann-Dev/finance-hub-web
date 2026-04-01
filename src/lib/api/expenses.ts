@@ -1,5 +1,5 @@
 import { http } from "@/lib/http";
-import type { Expense } from "@/types";
+import type { Expense, PaginatedResult } from "@/types";
 
 export interface CreateExpensePayload {
   amount: number,
@@ -10,8 +10,14 @@ export interface CreateExpensePayload {
 
 export type UpdateExpensePayload = Partial<CreateExpensePayload>;
 
-export async function getExpenses(): Promise<Expense[]> {
-  const { data } = await http.get<Expense[]>('/expenses');
+export interface GetExpensesParams {
+  page?: number;
+  limit?: number;
+}
+
+export async function getExpenses(params: GetExpensesParams = {}): Promise<PaginatedResult<Expense>> {
+  const { page = 1, limit = 10 } = params;
+  const { data } = await http.get<PaginatedResult<Expense>>(`/expenses?page=${page}&limit=${limit}`);
   return data;
 }
 
