@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatCurrency, extractErrorMessage, formatDateSafe, cn } from "@/lib/utils";
 import { InstallmentForm } from "@/components/expenses/installment-form";
 import { InstallmentGroupCard } from "@/components/expenses/installment-group-card";
+import { Pagianation } from "@/components/ui/pagination";
 
 // Calcula quantos dias faltam (negativo = já venceu)
 function getDaysUntil(dateStr: string): number {
@@ -43,6 +44,7 @@ const EMPTY_CATEGORY_FORM = {
 export default function ExpensesPage() {
   const {
     expenses, isLoading, error,
+    meta, currentPage, goToPage,
     totalPaid, totalPendingExpenses,
     create, update, remove, pay, unpay,
   } = useExpenses();
@@ -490,129 +492,138 @@ export default function ExpensesPage() {
             )}
           </div>
         ) : (
-          <div className="grid gap-3">
-            {filteredExpenses.map((expense: Expense) => {
-              const category  = getCategoryById(expense.categoryId);
-              const isPaid    = !!expense.paidAt;
-              const daysUntil = getDaysUntil(expense.date);
-              const isOverdue = !isPaid && daysUntil < 0;
-              const isToday   = !isPaid && daysUntil === 0;
+          <>
+            <div className="grid gap-3">
+              {filteredExpenses.map((expense: Expense) => {
+                const category  = getCategoryById(expense.categoryId);
+                const isPaid    = !!expense.paidAt;
+                const daysUntil = getDaysUntil(expense.date);
+                const isOverdue = !isPaid && daysUntil < 0;
+                const isToday   = !isPaid && daysUntil === 0;
 
-              return (
-                <div
-                  key={expense.id}
-                  className={cn(
-                    "bg-card rounded-xl border p-5 shadow-sm hover:shadow-md transition-shadow",
-                    isOverdue ? "border-destructive/30" : "border-border",
-                    isPaid    ? "opacity-70"             : ""
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      {/* Ícone da categoria */}
-                      <div className="p-3 rounded-lg shrink-0"
-                        style={{ backgroundColor: category ? `${category.color}20` : undefined }}>
-                        <Tag className="w-5 h-5"
-                          style={{ color: category?.color ?? "var(--color-muted-foreground)" }} />
+                return (
+                  <div
+                    key={expense.id}
+                    className={cn(
+                      "bg-card rounded-xl border p-5 shadow-sm hover:shadow-md transition-shadow",
+                      isOverdue ? "border-destructive/30" : "border-border",
+                      isPaid    ? "opacity-70"             : ""
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {/* Ícone da categoria */}
+                        <div className="p-3 rounded-lg shrink-0"
+                          style={{ backgroundColor: category ? `${category.color}20` : undefined }}>
+                          <Tag className="w-5 h-5"
+                            style={{ color: category?.color ?? "var(--color-muted-foreground)" }} />
+                        </div>
+
+                        <div>
+                          <h3 className={cn(
+                            "font-semibold text-foreground",
+                            isPaid && "line-through text-muted-foreground"
+                          )}>
+                            {expense.description}
+                          </h3>
+                          <div className="flex items-center gap-3 mt-1 flex-wrap">
+                            {category && (
+                              <span className="flex items-center gap-1 text-xs">
+                                <span className="inline-block w-2 h-2 rounded-full"
+                                  style={{ backgroundColor: category.color }} />
+                                <span className="text-muted-foreground">{category.name}</span>
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="w-3 h-3" />
+                              {formatDateSafe(expense.date)}
+                            </span>
+
+                            {/* Badge de status */}
+                            {isPaid ? (
+                              <span className="flex items-center gap-1 text-xs text-success font-medium">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Paga
+                              </span>
+                            ) : isOverdue ? (
+                              <span className="flex items-center gap-1 text-xs text-destructive font-medium">
+                                <AlertCircle className="w-3 h-3" />
+                                Vencida há {Math.abs(daysUntil)} dia(s)
+                              </span>
+                            ) : isToday ? (
+                              <span className="flex items-center gap-1 text-xs text-orange-500 font-medium">
+                                <AlertCircle className="w-3 h-3" />
+                                Vence hoje
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                Pendente
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <h3 className={cn(
-                          "font-semibold text-foreground",
-                          isPaid && "line-through text-muted-foreground"
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "text-lg font-bold hidden sm:block",
+                          isPaid ? "text-muted-foreground line-through" : "text-destructive"
                         )}>
-                          {expense.description}
-                        </h3>
-                        <div className="flex items-center gap-3 mt-1 flex-wrap">
-                          {category && (
-                            <span className="flex items-center gap-1 text-xs">
-                              <span className="inline-block w-2 h-2 rounded-full"
-                                style={{ backgroundColor: category.color }} />
-                              <span className="text-muted-foreground">{category.name}</span>
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Calendar className="w-3 h-3" />
-                            {formatDateSafe(expense.date)}
-                          </span>
+                          -{formatCurrency(expense.amount)}
+                        </span>
 
-                          {/* Badge de status */}
-                          {isPaid ? (
-                            <span className="flex items-center gap-1 text-xs text-success font-medium">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Paga
-                            </span>
-                          ) : isOverdue ? (
-                            <span className="flex items-center gap-1 text-xs text-destructive font-medium">
-                              <AlertCircle className="w-3 h-3" />
-                              Vencida há {Math.abs(daysUntil)} dia(s)
-                            </span>
-                          ) : isToday ? (
-                            <span className="flex items-center gap-1 text-xs text-orange-500 font-medium">
-                              <AlertCircle className="w-3 h-3" />
-                              Vence hoje
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              Pendente
-                            </span>
+                        {/* Botão pagar / desfazer */}
+                        <button
+                          onClick={() => handleTogglePay(expense)}
+                          disabled={payingId === expense.id}
+                          title={isPaid ? "Desfazer pagamento" : "Marcar como paga"}
+                          className={cn(
+                            "w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50",
+                            isPaid
+                              ? "text-success bg-success/10 hover:bg-success/20"
+                              : "text-muted-foreground hover:text-success hover:bg-success/10"
                           )}
-                        </div>
+                        >
+                          {payingId === expense.id ? (
+                            <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-5 h-5" />
+                          )}
+                        </button>
+
+                        <Button variant="ghost" size="icon" onClick={() => openEditExpense(expense)}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteExpense(expense.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    {/* Valor no mobile */}
+                    <div className="mt-3 pt-3 border-t border-border sm:hidden">
                       <span className={cn(
-                        "text-lg font-bold hidden sm:block",
+                        "text-lg font-bold",
                         isPaid ? "text-muted-foreground line-through" : "text-destructive"
                       )}>
                         -{formatCurrency(expense.amount)}
                       </span>
-
-                      {/* Botão pagar / desfazer */}
-                      <button
-                        onClick={() => handleTogglePay(expense)}
-                        disabled={payingId === expense.id}
-                        title={isPaid ? "Desfazer pagamento" : "Marcar como paga"}
-                        className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50",
-                          isPaid
-                            ? "text-success bg-success/10 hover:bg-success/20"
-                            : "text-muted-foreground hover:text-success hover:bg-success/10"
-                        )}
-                      >
-                        {payingId === expense.id ? (
-                          <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="w-5 h-5" />
-                        )}
-                      </button>
-
-                      <Button variant="ghost" size="icon" onClick={() => openEditExpense(expense)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteExpense(expense.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
                     </div>
                   </div>
-
-                  {/* Valor no mobile */}
-                  <div className="mt-3 pt-3 border-t border-border sm:hidden">
-                    <span className={cn(
-                      "text-lg font-bold",
-                      isPaid ? "text-muted-foreground line-through" : "text-destructive"
-                    )}>
-                      -{formatCurrency(expense.amount)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            {meta && (
+              <Pagianation
+                meta={meta}
+                onPageChange={goToPage}
+                disabled={isLoading}
+              />
+            )}
+          </>
         )}
       </div>
 
