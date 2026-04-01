@@ -9,6 +9,7 @@ import { MonthlyBarChart } from "@/components/dashboard/monthly-bar-chart"
 import { InsightCard } from "@/components/dashboard/insight-card"
 import { formatCurrency } from "@/lib/utils"
 import type { MonthlyReport, MonthComparison } from "@/types"
+import { PendingExpensesWidget } from "@/components/dashboard/pending-expenses-widget";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -82,16 +83,16 @@ export default function DashboardPage() {
                   <div className="h-7 bg-muted rounded w-3/4" />
                   <div className="h-3 bg-muted rounded w-1/3" />
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-muted"/>
+                <div className="w-11 h-11 rounded-xl bg-muted" />
               </div>
             </div>
           ))}
         </div>
       ) : monthly && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-up">
-          <SummaryCard title="Receitas" value={monthly.totalIncomes} icon={Wallet} variant="income" subtitle="Total do mês"/>
-          <SummaryCard title="Despesas" value={monthly.totalExpenses} icon={TrendingDown} variant="expense" subtitle="Total de mês"/>
-          <SummaryCard title="Saldo" value={monthly.balance} icon={TrendingUp} variant={monthly.balance >= 0 ? 'income' : 'expense'} subtitle="Receitas - Despesas"/>
+          <SummaryCard title="Receitas" value={monthly.totalIncomes} icon={Wallet} variant="income" subtitle="Total do mês" />
+          <SummaryCard title="Despesas" value={monthly.totalExpenses} icon={TrendingDown} variant="expense" subtitle="Total de mês" />
+          <SummaryCard title="Saldo" value={monthly.balance} icon={TrendingUp} variant={monthly.balance >= 0 ? 'income' : 'expense'} subtitle="Receitas - Despesas" />
           <SummaryCard title="Cofrinhos" value={monthly.totalSavings} icon={PiggyBank} variant="savings" subtitle="Total guardado" />
         </div>
       )}
@@ -100,8 +101,12 @@ export default function DashboardPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-up">
             <ExpensePieChart data={monthly.expensesByCategory} />
-            <InsightCard insights={comparison ? buildInsights(monthly, comparison): []} />
+            <InsightCard insights={comparison ? buildInsights(monthly, comparison) : []} />
           </div>
+          <div className="animate-fade-up">
+            <PendingExpensesWidget totalPending={monthly.totalPending} />
+          </div>
+
           <div className="animate-fade-up">
             <MonthlyBarChart data={annual.monthlyData} year={CURRENT_YEAR} />
           </div>
@@ -114,14 +119,14 @@ export default function DashboardPage() {
             {[1, 2].map((n) => (
               <div key={n} className="bg-card rounded-2xl border border-border p-6 animate-pulse">
                 <div className="h-4 bg-muted rounded w-1/3 mb-4" />
-                <div className="h-64 bg-muted rounded-xl"/>
+                <div className="h-64 bg-muted rounded-xl" />
               </div>
             ))}
           </div>
 
           <div className="bg-card rounded-2xl border border-border p-6 animate-pulse">
             <div className="h-4 bg-muted rounded w-1/4 mb-4" />
-            <div className="h-64 bg-muted rounded-xl"/>
+            <div className="h-64 bg-muted rounded-xl" />
           </div>
         </>
       )}

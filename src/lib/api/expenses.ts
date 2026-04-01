@@ -28,3 +28,23 @@ export async function updateExpense(id: number, payload: UpdateExpensePayload): 
 export async function deleteExpense(id: number): Promise<void> {
   await http.delete(`/expenses/${id}`);
 }
+
+export async function payExpense(id: number): Promise<Expense> {
+  const {data} = await http.patch<Expense>(`/expense/${id}/pay`);
+  return data;
+}
+
+export async function unpayExpense(id:number): Promise<Expense> {
+  const { data } = await http.patch<Expense>(`/expenses/${id}/unpay`)
+  return data;
+}
+
+export async function getPendingExpenses(): Promise<Expense[]> {
+  const { data } = await http.get<Expense[]>('/expenses/pending');
+  return data;
+}
+
+export async function getDueSoonExpenses(days = 7): Promise<Expense[]> {
+  const { data } = await http.get<Expense[]>(`/expenses/due-soon?days=${days}`)
+  return data;
+}

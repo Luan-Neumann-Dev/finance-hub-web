@@ -35,3 +35,10 @@ export function extractErrorMessage(err: unknown): string {
   }
   return "Ocorreu um erro. Tente novamente.";
 }
+
+export function getDaysUntil(dateStr: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr.split("T")[0] + "T00:00:00");
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}

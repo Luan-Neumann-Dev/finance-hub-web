@@ -52,6 +52,7 @@ export interface Expense {
     amount: string;
     description: string;
     date: string;
+    paidAt: string | null;
     createdAt: string;
     updatedAt: string;
     category?: ExpenseCategory | null;
@@ -94,6 +95,8 @@ export const RECURRENCE_OPTIONS = [
 export interface MonthlyReport {
     totalIncomes: number;
     totalExpenses: number;
+    totalPaid: number;
+    totalPending: number;
     balance: number;
     totalSavings: number;
     expensesByCategory: {
