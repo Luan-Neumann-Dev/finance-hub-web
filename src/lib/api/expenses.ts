@@ -36,7 +36,7 @@ export async function deleteExpense(id: number): Promise<void> {
 }
 
 export async function payExpense(id: number): Promise<Expense> {
-  const {data} = await http.patch<Expense>(`/expense/${id}/pay`);
+  const {data} = await http.patch<Expense>(`/expenses/${id}/pay`);
   return data;
 }
 
