@@ -110,6 +110,8 @@ export default function IncomesPage() {
       } else {
         await create(payload);
       }
+      
+      closeDialog();
     } catch (err) {
       setFormError(extractErrorMessage(err));
     } finally {
