@@ -5,6 +5,8 @@ import {
   Plus, Edit2, Trash2, CreditCard, Calendar,
   Tag, Settings, AlertCircle, CreditCard as CreditCardInstallment,
   CheckCircle2, Clock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useCategories } from "@/hooks/use-categories";
@@ -28,6 +30,11 @@ function getDaysUntil(dateStr: string): number {
   return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
 const EMPTY_EXPENSE_FORM = {
   amount: "",
   description: "",
@@ -45,6 +52,7 @@ export default function ExpensesPage() {
   const {
     expenses, isLoading, error,
     meta, currentPage, goToPage,
+    currentMonth, currentYear, goToMonth,
     totalPaid, totalPendingExpenses,
     create, update, remove, pay, unpay,
   } = useExpenses();
@@ -64,22 +72,22 @@ export default function ExpensesPage() {
   } = useInstallments();
 
   // --- Dialogs ---
-  const [isExpenseOpen,     setIsExpenseOpen]     = useState(false);
-  const [isCategoryOpen,    setIsCategoryOpen]    = useState(false);
+  const [isExpenseOpen, setIsExpenseOpen] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isInstallmentOpen, setIsInstallmentOpen] = useState(false);
 
   // --- Forms ---
-  const [expenseForm,  setExpenseForm]  = useState(EMPTY_EXPENSE_FORM);
+  const [expenseForm, setExpenseForm] = useState(EMPTY_EXPENSE_FORM);
   const [categoryForm, setCategoryForm] = useState(EMPTY_CATEGORY_FORM);
 
   // --- Edição ---
-  const [editingExpense,  setEditingExpense]  = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingCategory, setEditingCategory] = useState<ExpenseCategory | null>(null);
 
   // --- Filtro de status ---
   const [filter, setFilter] = useState<"all" | "paid" | "pending">("all");
   const filteredExpenses = expenses.filter((e) => {
-    if (filter === "paid")    return !!e.paidAt;
+    if (filter === "paid") return !!e.paidAt;
     if (filter === "pending") return !e.paidAt;
     return true;
   });
@@ -88,10 +96,10 @@ export default function ExpensesPage() {
   const [payingId, setPayingId] = useState<number | null>(null);
 
   // --- Submissão ---
-  const [isSavingExpense,  setIsSavingExpense]  = useState(false);
+  const [isSavingExpense, setIsSavingExpense] = useState(false);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
-  const [expenseError,     setExpenseError]     = useState<string | null>(null);
-  const [categoryError,    setCategoryError]    = useState<string | null>(null);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
 
   // --- Handlers de abertura ---
   function openCreateExpense() {
@@ -104,10 +112,10 @@ export default function ExpensesPage() {
   function openEditExpense(expense: Expense) {
     setEditingExpense(expense);
     setExpenseForm({
-      amount:     String(expense.amount),
+      amount: String(expense.amount),
       description: expense.description,
-      categoryId:  expense.categoryId ? String(expense.categoryId) : "",
-      date:        expense.date.split("T")[0],
+      categoryId: expense.categoryId ? String(expense.categoryId) : "",
+      date: expense.date.split("T")[0],
     });
     setExpenseError(null);
     setIsExpenseOpen(true);
@@ -144,7 +152,7 @@ export default function ExpensesPage() {
     setIsSavingExpense(true);
     try {
       const payload = {
-        amount:      parseFloat(expenseForm.amount),
+        amount: parseFloat(expenseForm.amount),
         description: expenseForm.description.trim(),
         ...(expenseForm.categoryId && expenseForm.categoryId !== "none"
           ? { categoryId: parseInt(expenseForm.categoryId, 10) }
@@ -403,21 +411,6 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* Filtros de status */}
-      <div className="flex gap-2 animate-fade-up">
-        {(["all", "pending", "paid"] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-              filter === f
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-accent"
-            )}>
-            {f === "all" ? "Todas" : f === "pending" ? "Pendentes" : "Pagas"}
-          </button>
-        ))}
-      </div>
-
       {/* Erro de carregamento */}
       {error && (
         <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-3">
@@ -425,6 +418,39 @@ export default function ExpensesPage() {
           {error}
         </div>
       )}
+
+       <div className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3 animate-fade-up">
+        <button
+          onClick={() => {
+            const prev = currentMonth === 1
+              ? { month: 12, year: currentYear - 1 }
+              : { month: currentMonth - 1, year: currentYear }
+
+            goToMonth(prev.month, prev.year)
+          }}
+          className="p-1.5 rounded-lg hover:bg-accent transition-colors cursor-pointer"
+          title="Mês anterior"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+
+        <span className="font-semibold text-foreground text-sm">
+          {MONTH_NAMES[currentMonth - 1]} {currentYear}
+        </span>
+
+        <button
+          onClick={() => {
+            const next = currentMonth === 12
+              ? { month: 1, year: currentYear + 1 }
+              : { month: currentMonth + 1, year: currentYear }
+            goToMonth(next.month, next.year);
+          }}
+          className="p-1.5 rounded-lg hover:bg-accent transition-colors"
+          title="Próximo mês"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
 
       {/* Cards de totais */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-up">
@@ -452,6 +478,21 @@ export default function ExpensesPage() {
         </div>
       </div>
 
+      {/* Filtros de status */}
+      <div className="flex gap-2 animate-fade-up">
+        {(["all", "pending", "paid"] as const).map((f) => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+              filter === f
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-accent"
+            )}>
+            {f === "all" ? "Todas" : f === "pending" ? "Pendentes" : "Pagas"}
+          </button>
+        ))}
+      </div>
+
       {/* Lista de despesas */}
       <div className="animate-fade-up">
         {isLoading ? (
@@ -476,8 +517,8 @@ export default function ExpensesPage() {
               {filter === "all"
                 ? "Nenhuma despesa registrada"
                 : filter === "paid"
-                ? "Nenhuma despesa paga"
-                : "Nenhuma despesa pendente"}
+                  ? "Nenhuma despesa paga"
+                  : "Nenhuma despesa pendente"}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
               {filter === "all"
@@ -495,11 +536,11 @@ export default function ExpensesPage() {
           <>
             <div className="grid gap-3">
               {filteredExpenses.map((expense: Expense) => {
-                const category  = getCategoryById(expense.categoryId);
-                const isPaid    = !!expense.paidAt;
+                const category = getCategoryById(expense.categoryId);
+                const isPaid = !!expense.paidAt;
                 const daysUntil = getDaysUntil(expense.date);
                 const isOverdue = !isPaid && daysUntil < 0;
-                const isToday   = !isPaid && daysUntil === 0;
+                const isToday = !isPaid && daysUntil === 0;
 
                 return (
                   <div
@@ -507,7 +548,7 @@ export default function ExpensesPage() {
                     className={cn(
                       "bg-card rounded-xl border p-5 shadow-sm hover:shadow-md transition-shadow",
                       isOverdue ? "border-destructive/30" : "border-border",
-                      isPaid    ? "opacity-70"             : ""
+                      isPaid ? "opacity-70" : ""
                     )}
                   >
                     <div className="flex items-center justify-between">
