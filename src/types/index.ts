@@ -141,6 +141,8 @@ export interface PaginationMeta {
   totalPages: number;
   hasPreviousPage: boolean;
   hasNextPage: boolean;
+  totalPaid?: number;
+  totalPending?: number;
 }
 
 export interface PaginatedResult<T> {

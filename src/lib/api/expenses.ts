@@ -13,11 +13,19 @@ export type UpdateExpensePayload = Partial<CreateExpensePayload>;
 export interface GetExpensesParams {
   page?: number;
   limit?: number;
+  month?: number;
+  year?: number;
 }
 
 export async function getExpenses(params: GetExpensesParams = {}): Promise<PaginatedResult<Expense>> {
-  const { page = 1, limit = 10 } = params;
-  const { data } = await http.get<PaginatedResult<Expense>>(`/expenses?page=${page}&limit=${limit}`);
+  const { page = 1, limit = 10, month, year } = params;
+  const query = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    ...(month !== undefined ? { month: String(month) } : {}),
+    ...(year !== undefined ? { year: String(year) } : {}),
+  });
+  const { data } = await http.get<PaginatedResult<Expense>>(`/expenses?${query}`);
   return data;
 }
 
