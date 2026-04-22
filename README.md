@@ -15,7 +15,7 @@
 ![Project Preview](https://github.com/user-attachments/assets/28c23cc2-36a0-4228-b76e-474b6973a9f8)
 ![Project Preview](https://github.com/user-attachments/assets/d7e35cb0-f0ad-4a2e-b65d-74da443e9152)
 
-**🔗 Related repository: [FinanceHub API (backend)](https://github.com/Luan-Neumann-Dev/finance-hub-api)**
+**🔗 Related repository: [FinanceHub API (backend)](https://github.com/Luan-Neumann-Dev/finance-hub-api-nestjs)**
 
 ---
 
