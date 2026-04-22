@@ -8,6 +8,13 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![License](https://img.shields.io/badge/license-UNLICENSED-gray.svg?style=for-the-badge)](LICENSE)
 
+![Project Preview](https://github.com/user-attachments/assets/08c68044-5684-4a48-90ac-5cb480492361)
+![Project Preview](https://github.com/user-attachments/assets/6773bde9-9b08-4350-9e08-dc3cd512c21f)
+![Project Preview](https://github.com/user-attachments/assets/a34190ee-9f54-4a95-b1f6-04567e601087)
+![Project Preview](https://github.com/user-attachments/assets/6757cadd-aee2-4238-822c-732f9fe9350f)
+![Project Preview](https://github.com/user-attachments/assets/28c23cc2-36a0-4228-b76e-474b6973a9f8)
+![Project Preview](https://github.com/user-attachments/assets/d7e35cb0-f0ad-4a2e-b65d-74da443e9152)
+
 **🔗 Related repository: [FinanceHub API (backend)](https://github.com/Luan-Neumann-Dev/finance-hub-api)**
 
 ---
