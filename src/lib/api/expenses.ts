@@ -1,5 +1,5 @@
 import { http } from "@/lib/http";
-import type { Expense } from "@/types";
+import type { Expense, PaginatedResult } from "@/types";
 
 export interface CreateExpensePayload {
   amount: number,
@@ -10,8 +10,22 @@ export interface CreateExpensePayload {
 
 export type UpdateExpensePayload = Partial<CreateExpensePayload>;
 
-export async function getExpenses(): Promise<Expense[]> {
-  const { data } = await http.get<Expense[]>('/expenses');
+export interface GetExpensesParams {
+  page?: number;
+  limit?: number;
+  month?: number;
+  year?: number;
+}
+
+export async function getExpenses(params: GetExpensesParams = {}): Promise<PaginatedResult<Expense>> {
+  const { page = 1, limit = 10, month, year } = params;
+  const query = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    ...(month !== undefined ? { month: String(month) } : {}),
+    ...(year !== undefined ? { year: String(year) } : {}),
+  });
+  const { data } = await http.get<PaginatedResult<Expense>>(`/expenses?${query}`);
   return data;
 }
 
@@ -30,7 +44,7 @@ export async function deleteExpense(id: number): Promise<void> {
 }
 
 export async function payExpense(id: number): Promise<Expense> {
-  const {data} = await http.patch<Expense>(`/expense/${id}/pay`);
+  const {data} = await http.patch<Expense>(`/expenses/${id}/pay`);
   return data;
 }
 

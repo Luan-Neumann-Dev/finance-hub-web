@@ -22,14 +22,13 @@ export function InstallmentGroupCard({ group, onUpdate, onDelete}: InstallmentGr
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const today = new Date();
-  const paidCount = group.expenses.filter((e) => new Date(e.date) < today).length;
+  const paidCount = group.expenses.filter((e) => !!e.paidAt).length;
   const totalCount = group.expenses.length;
   const paidAmount = group.expenses
-    .filter((e) => new Date(e.date) < today)
-    .reduce((s, e) => s + Number(e.amount), 0)
+    .filter((e) => !!e.paidAt)
+    .reduce((s, e) => s + Number(e.amount), 0);
   const pendingAmount = group.expenses
-    .filter((e) => new Date(e.date) >= today)
+    .filter((e) => !e.paidAt)
     .reduce((s, e) => s + Number(e.amount), 0);
 
   function openEdit(expense: Expense) {
@@ -125,7 +124,7 @@ export function InstallmentGroupCard({ group, onUpdate, onDelete}: InstallmentGr
           <div className="mt-4 h-1.5 bg-muted rounded-full overflow-hidden">
             <div 
               className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${(paidCount / totalCount) * 100}$` }}
+              style={{ width: `${(paidCount / totalCount) * 100}%` }}
             />
           </div>
         </div>
@@ -133,7 +132,7 @@ export function InstallmentGroupCard({ group, onUpdate, onDelete}: InstallmentGr
         {expanded && (
           <div className="border-t border-border divide-y divide-border/50">
             {group.expenses.map((expense) => {
-              const isPast = new Date(expense.date) > today;
+              const isPast = !expense.paidAt;
 
               return (
                 <div
@@ -146,7 +145,7 @@ export function InstallmentGroupCard({ group, onUpdate, onDelete}: InstallmentGr
                   <div className="flex items-center gap-3"> 
                     <span className={cn(
                       'text-xs font-medium w-8 h-8 rounded-full flex items-center justify-center shrink-0',
-                      isPast ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'
+                      isPast ? 'bg-muted text-muted-foreground' : 'bg-success/10 text-success'
                     )}>
                       {expense.installmentNumber}
                     </span>
@@ -156,7 +155,7 @@ export function InstallmentGroupCard({ group, onUpdate, onDelete}: InstallmentGr
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
                         {formatDateSafe(expense.date)}
-                        {isPast && <span className="ml-1 text-success">• paga</span>}
+                        {!isPast && <span className="ml-1 text-success">• paga</span>}
                       </span>
                     </div>
                   </div>
